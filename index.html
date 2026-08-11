@@ -310,34 +310,32 @@ input[type=range]:disabled{opacity:0.4;}
     <div class="dlg">
       <label class="dll" for="f-delapart">⭐ De la part de <span style="color:var(--red)">*</span></label>
       <input class="dli" id="f-delapart" type="text" placeholder="Obligatoire" autocomplete="off"/></div>
-    <div class="frow">
-      <div class="fg" id="fg-traiteur-type">
-        <label class="fl">🍽️ Traiteur</label>
-        <div style="display:flex;gap:8px;margin-bottom:8px">
-          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;font-weight:600">
-            <input type="radio" name="traiteur-type" id="tr-interne" value="interne" style="accent-color:var(--blue)"/> Interne
-          </label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;font-weight:600">
-            <input type="radio" name="traiteur-type" id="tr-externe" value="externe" style="accent-color:var(--blue)"/> Externe
-          </label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;font-weight:600">
-            <input type="radio" name="traiteur-type" id="tr-aucun" value="aucun" style="accent-color:var(--blue)" checked/> Aucun
-          </label>
-        </div>
-        <input class="fi" id="f-traiteur" type="text" placeholder="Nom du traiteur" autocomplete="off" list="dl-traiteur" style="display:none"/><datalist id="dl-traiteur"></datalist>
-        <div id="fg-prix-table" style="display:none;margin-top:8px">
-          <label class="fl" for="f-prix-table">💰 Prix/table (DH) <span style="color:var(--red)">*</span></label>
-          <input class="fi" id="f-prix-table" type="number" min="0" placeholder="Prix par table (obligatoire)" />
-        </div>
+    <div class="fg" id="fg-traiteur-type">
+      <label class="fl">🍽️ Traiteur</label>
+      <div style="display:flex;gap:12px;margin-bottom:10px">
+        <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;font-weight:600;padding:6px 12px;border:1.5px solid var(--border2);border-radius:8px">
+          <input type="radio" name="traiteur-type" id="tr-interne" value="interne" style="accent-color:var(--blue)"/> Interne
+        </label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;font-weight:600;padding:6px 12px;border:1.5px solid var(--border2);border-radius:8px">
+          <input type="radio" name="traiteur-type" id="tr-externe" value="externe" style="accent-color:var(--blue)"/> Externe
+        </label>
       </div>
-      <div class="fg"><label class="fl" for="f-neggafa">💄 Neggafa</label>
-        <input class="fi" id="f-neggafa" type="text" placeholder="Nom de la neggafa" autocomplete="off" list="dl-neggafa"/><datalist id="dl-neggafa"></datalist></div>
+      <div id="fg-traiteur-nom" style="display:none">
+        <div id="fg-prix-table" style="display:none;margin-bottom:8px">
+          <label class="fl" for="f-prix-table">💰 Prix/table (DH) <span style="color:var(--red)">*</span></label>
+          <input class="fi" id="f-prix-table" type="number" min="0" placeholder="Prix par table (obligatoire)" oninput="updatePayDisplay()"/>
+        </div>
+        <input class="fi" id="f-traiteur" type="text" placeholder="Nom du traiteur externe" autocomplete="off" list="dl-traiteur"/><datalist id="dl-traiteur"></datalist>
+      </div>
+    </div>
+    <div class="fg"><label class="fl" for="f-neggafa">💄 Neggafa</label>
+      <input class="fi" id="f-neggafa" type="text" placeholder="Nom de la neggafa" autocomplete="off" list="dl-neggafa"/><datalist id="dl-neggafa"></datalist>
     </div>
     <div class="fg"><label class="fl" for="f-obs">Observation</label>
       <input class="fi" id="f-obs" type="text" placeholder="Notes..." autocomplete="off"/></div>
     <div class="fg">
-      <label class="fl">Tables — <span id="tables-val" style="color:var(--blue)">10 / 200</span></label>
-      <input type="range" id="f-tables" min="1" max="200" value="10"/>
+      <label class="fl" for="f-tables">🪑 Nombre de tables</label>
+      <input class="fi" type="number" id="f-tables" min="1" max="200" value="10" placeholder="Nombre de tables" oninput="updatePayDisplay()"/>
     </div>
     <div class="pdisplay" id="pay-display" style="display:none">
       <div class="pring" id="pay-ring"></div>
@@ -1087,25 +1085,34 @@ function attachFormListeners(){
   document.querySelectorAll('input[name="traiteur-type"]').forEach(radio=>{
     radio.addEventListener('change',()=>{
       const val=radio.value;
+      const trNomDiv=document.getElementById('fg-traiteur-nom');
       const trInput=document.getElementById('f-traiteur');
       const prixTableDiv=document.getElementById('fg-prix-table');
-      if(val==='aucun'){
-        trInput.style.display='none';prixTableDiv.style.display='none';
-        trInput.value='';document.getElementById('f-prix-table').value='';
-      }else{
+      // Afficher le bloc nom uniquement pour externe
+      trNomDiv.style.display=val?'block':'none';
+      // Prix/table uniquement pour interne
+      prixTableDiv.style.display=val==='interne'?'block':'none';
+      if(val==='interne'){
+        // Interne : pré-remplir "Interne" et cacher le champ nom
+        trInput.value='Interne';
+        trInput.style.display='none';
+      } else {
+        // Externe : champ nom visible et vide
         trInput.style.display='block';
-        prixTableDiv.style.display=val==='interne'?'block':'none';
-        if(val==='externe')document.getElementById('f-prix-table').value='';
+        trInput.value='';
+        document.getElementById('f-prix-table').value='';
       }
+      updatePayDisplay();
     });
   });
   document.getElementById('btn-main-add').addEventListener('click',()=>openForm(null,''));
   document.getElementById('form-back-btn').addEventListener('click',handleBack);
   document.getElementById('form-save-btn').addEventListener('click',()=>saveForm(false));
-  document.getElementById('f-tables').addEventListener('input',function(){
-    document.getElementById('tables-val').textContent=this.value+' / '+CAP;
+  // tables-val n'existe plus (input number) — mettre à jour le calcul
+  ['f-prix','f-avance','f-tables'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener('input',updatePayDisplay);
   });
-  ['f-prix','f-avance'].forEach(id=>document.getElementById(id).addEventListener('input',updatePayDisplay));
   document.getElementById('ov-day').addEventListener('click',e=>{if(e.target===document.getElementById('ov-day'))closeDaySheet();});
   document.getElementById('ov-form').addEventListener('click',e=>{if(e.target===document.getElementById('ov-form'))handleBack();});
   document.getElementById('u-save').addEventListener('click',()=>saveForm(true));
@@ -1129,11 +1136,13 @@ function openForm(id,defaultDate){
 
   // Fill inputs
   // Pré-remplir type traiteur
-  const trType=data.traiteurType||'aucun';
-  const trRadio=document.querySelector(`input[name="traiteur-type"][value="${trType}"]`);
-  if(trRadio){trRadio.checked=true;trRadio.dispatchEvent(new Event('change'));}
-  if(data.prixTable&&trType==='interne'){
-    document.getElementById('f-prix-table').value=data.prixTable||'';
+  const trType=data.traiteurType||'';
+  if(trType==='interne'||trType==='externe'){
+    const trRadio=document.querySelector(`input[name="traiteur-type"][value="${trType}"]`);
+    if(trRadio){trRadio.checked=true;trRadio.dispatchEvent(new Event('change'));}
+    if(trType==='interne'&&data.prixTable){
+      document.getElementById('f-prix-table').value=data.prixTable||'';
+    }
   }
   ['f-nom','f-tel','f-date','f-prix','f-avance','f-delapart','f-traiteur','f-neggafa','f-obs'].forEach(fid=>{
     const el=document.getElementById(fid);if(!el)return;
@@ -1142,7 +1151,6 @@ function openForm(id,defaultDate){
     el.value=data[map[key]]||'';
   });
   document.getElementById('f-tables').value=data.tables||10;
-  document.getElementById('tables-val').textContent=(data.tables||10)+' / '+CAP;
 
   // Title
   document.getElementById('form-title').textContent=id?'Réservation':'Nouvelle réservation';
@@ -1221,19 +1229,27 @@ function getFormData(){
     delapart:document.getElementById('f-delapart').value,
     traiteurType:trType,
     traiteur:trType!=='aucun'?document.getElementById('f-traiteur').value:'',
-    prixTable:trType==='interne'?parseFloat(document.getElementById('f-prix-table').value)||0:0,
+    prixTable:trType==='interne'?(parseFloat(document.getElementById('f-prix-table')?.value)||0):0,
     neggafa:document.getElementById('f-neggafa').value,observation:document.getElementById('f-obs').value};
 }
 function updatePayDisplay(){
   const p=parseFloat(document.getElementById('f-prix').value)||0;
   const a=parseFloat(document.getElementById('f-avance').value)||0;
+  // Calculer le total traiteur interne si applicable
+  const trType=document.querySelector('input[name="traiteur-type"]:checked')?.value||'aucun';
+  const prixTable=trType==='interne'?(parseFloat(document.getElementById('f-prix-table')?.value)||0):0;
+  const nbTables=trType==='interne'?(parseFloat(document.getElementById('f-tables')?.value)||0):0;
+  const traiteurTotal=prixTable*nbTables;
+  const total=p+traiteurTotal; // total salle + traiteur interne
   const pd=document.getElementById('pay-display');
-  if(!p){pd.style.display='none';return;}
-  const v=pct(p,a),col=pcol(v),rest=Math.max(0,p-a);
+  if(!total){pd.style.display='none';return;}
+  const v=pct(total,a),col=pcol(v),rest=Math.max(0,total-a);
   pd.style.display='flex';
   document.getElementById('pay-ring').innerHTML=ring(v,54,col)+`<span class="pring-pct" style="color:${col}">${v}%</span>`;
+  const traiteurLine=traiteurTotal>0?`<div style="color:var(--text2);font-size:11px;margin-top:1px">Salle: ${fmtDH(p)} + Traiteur: ${fmtDH(traiteurTotal)}</div>`:'';
   document.getElementById('pay-text').innerHTML=`<div style="font-weight:700;font-size:15px;color:var(--text)">${plbl(v)}</div>
-    <div style="color:var(--text2);font-size:12px;margin-top:2px">Reste: <b style="color:var(--text)">${fmtDH(rest)}</b></div>`;
+    ${traiteurLine}
+    <div style="color:var(--text2);font-size:12px;margin-top:2px">Total: <b style="color:var(--text)">${fmtDH(total)}</b> · Reste: <b style="color:${col}">${fmtDH(rest)}</b></div>`;
 }
 function isFormDirty(){return JSON.stringify(getFormData())!==formSnap;}
 function handleBack(){if(editingId!==null&&isFormDirty())openOverlay('ov-unsaved');else closeForm();}
@@ -1266,7 +1282,10 @@ function saveForm(fromUnsaved){
 
   const r={
     id:editingId||uid(),hall:0,nom:d.nom,tel:d.tel,date:d.date,
-    prix:parseFloat(d.prix)||0,avance:parseFloat(d.avance)||0,traiteurType:d.traiteurType||'aucun',prixTable:d.prixTable||0,
+    prix:parseFloat(d.prix)||0,avance:parseFloat(d.avance)||0,
+        traiteurType:d.traiteurType||'',prixTable:d.prixTable||0,
+        totalSalle:parseFloat(d.prix)||0,
+        total:(parseFloat(d.prix)||0)+(d.traiteurType==='interne'?(d.prixTable||0)*(parseInt(d.tables)||0):0),
     tables:parseInt(d.tables)||10,delapart:d.delapart,
     traiteur:d.traiteur||'',neggafa:d.neggafa||'',observation:d.observation||'',
     createdBy:existing?.createdBy||currentUser.username,
@@ -1402,7 +1421,8 @@ function printReservationPDF(r){
   const win=window.open('','_blank','width=800,height=600');
   const traiteurLine=r.traiteur?`<tr><td>Traiteur</td><td>${r.traiteur}${r.traiteurType==='interne'&&r.prixTable?' (Interne - '+r.prixTable+' DH/table)':' (Externe)'}</td></tr>`:'';
   const neggafaLine=r.neggafa?`<tr><td>Neggafa</td><td>${r.neggafa}</td></tr>`:'';
-  const reste=Math.max(0,(r.prix||0)-(r.avance||0));
+  const totalPrix=(r.total||0)>(r.prix||0)?(r.total||0):(r.prix||0);
+  const reste=Math.max(0,totalPrix-(r.avance||0));
   const traiteurTotal=r.traiteurType==='interne'&&r.prixTable?(r.prixTable||0)*(r.tables||0):0;
   win.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
   <title>Bon de réservation - ${r.nom}</title>
@@ -1450,6 +1470,7 @@ function printReservationPDF(r){
     <div class="total-row"><span>Montant total salle</span><span><b>${(r.prix||0).toLocaleString('fr-FR')} DH</b></span></div>
     ${traiteurTotal>0?`<div class="total-row"><span>Traiteur interne (${r.tables} tables × ${r.prixTable} DH)</span><span><b>${traiteurTotal.toLocaleString('fr-FR')} DH</b></span></div>`:''}
     <div class="total-row green"><span>Avance versée</span><span><b>- ${(r.avance||0).toLocaleString('fr-FR')} DH</b></span></div>
+    ${totalPrix>(r.prix||0)?`<div class="total-row" style="font-weight:700"><span>Total général</span><span>${totalPrix.toLocaleString('fr-FR')} DH</span></div>`:''}
     <div class="total-row main red"><span>Reste à payer</span><span>${reste.toLocaleString('fr-FR')} DH</span></div>
   </div>
   <div class="footer">
