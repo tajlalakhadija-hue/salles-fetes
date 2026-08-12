@@ -1,24 +1,17 @@
 {
   "name": "Taj Lala Khadija",
   "short_name": "Taj Lala Khadija",
-  "description": "Gestion de Salle de Fêtes",
+  "description": "Gestion de Salle de Fetes",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#1a1a2e",
   "theme_color": "#1a1a2e",
   "orientation": "portrait",
   "icons": [
-    {
-      "src": "./icon-192.jpg",
-      "sizes": "192x192",
-      "type": "image/jpeg",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icon-512.jpg",
-      "sizes": "512x512",
-      "type": "image/jpeg",
-      "purpose": "any maskable"
-    }
+    {"src": "./icon-192.jpg", "sizes": "192x192", "type": "image/jpeg", "purpose": "any"},
+    {"src": "./icon-192.jpg", "sizes": "192x192", "type": "image/jpeg", "purpose": "maskable"},
+    {"src": "./icon-512.jpg", "sizes": "512x512", "type": "image/jpeg", "purpose": "any"},
+    {"src": "./icon-512.jpg", "sizes": "512x512", "type": "image/jpeg", "purpose": "maskable"}
   ]
 }
